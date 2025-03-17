@@ -1295,45 +1295,6 @@ class emgGUI(ctk.CTk):
         # Show results
         table.show()
 
-    def load_file_from_path(self, file_path):
-        """
-        Load a file directly from the provided file path.
-        """
-        try:
-            self.file_path = file_path
-            self.resdict = openhdemg.emg_from_json(filepath=self.file_path)
-            # Add filespecs
-            if self.resdict["SOURCE"] in ["DEMUSE", "OTB", "CUSTOMCSV", "DELSYS"]:
-                self.n_channels.configure(
-                    text="N Channels: " + str(len(self.resdict["RAW_SIGNAL"].columns)),
-                    font=("Segoe UI", 15, ("bold")),
-                )
-                self.n_of_mus.configure(
-                    text="N of MUs: " + str(self.resdict["NUMBER_OF_MUS"]),
-                    font=("Segoe UI", 15, "bold"),
-                )
-                self.file_length.configure(
-                    text="File Length: " + str(self.resdict["EMG_LENGTH"]),
-                    font=("Segoe UI", 15, "bold"),
-                )
-            else:
-                self.n_channels.configure(
-                    text="N Channels: " + str(len(self.resdict["REF_SIGNAL"].columns)),
-                    font=("Segoe UI", 15, ("bold")),
-                )
-                self.n_of_mus.configure(
-                    text="N of MUs: N/A",
-                    font=("Segoe UI", 15, "bold"),
-                )
-                self.file_length.configure(
-                    text="File Length: " + str(len(self.resdict["REF_SIGNAL"].iloc[:, 0])),
-                    font=("Segoe UI", 15, "bold"),
-                )
-            self.in_gui_plotting(self.resdict)
-        except Exception as e:
-            show_error_dialog(parent=self, error=e, solution="Failed to load file from path.")
-
-
 # ----------------------------------------------------------------------------------------------
 def run_main():
     if __name__ == "__main__":
