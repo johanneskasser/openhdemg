@@ -7,6 +7,7 @@ import os
 import copy
 import subprocess
 import sys
+import argparse
 import tkinter as tk
 import webbrowser
 from tkinter import Canvas, E, N, S, StringVar, Tk, W, filedialog, messagebox, ttk
@@ -141,6 +142,7 @@ class emgGUI(ctk.CTk):
             tk class object
         """
 
+        file_path = kwargs.pop('file_path', None)
         super().__init__(*args, **kwargs)
 
         # Load settings
@@ -549,6 +551,10 @@ class emgGUI(ctk.CTk):
         for child in self.left.winfo_children():
             child.grid_configure(padx=5, pady=5)
 
+        # Check if a file path was provided as an argument
+        if file_path:
+            self.load_file_from_path(file_path)
+
     # Define functionalities for buttons used in GUI master window
     def load_settings(self):
         """
@@ -583,7 +589,7 @@ class emgGUI(ctk.CTk):
         else:  # Linux or other
             subprocess.run(["xdg-open", file_path])
 
-    def get_file_input(self):
+    def get_file_input(self, cli_filepath=None):
         """
         Instance Method to load the file for analysis. The user is asked to
         select the file.
@@ -610,11 +616,13 @@ class emgGUI(ctk.CTk):
                 ]:
                     # Check filetype for processing
                     if self.filetype.get() == "OTB":
-                        # Ask user to select the decomposed file
-                        file_path = filedialog.askopenfilename(
-                            title="Open decomposed OTB file to load",
-                            filetypes=[("MATLAB files", "*.mat")],
-                        )
+                        if cli_filepath is not None:
+                            file_path = cli_filepath
+                        else:
+                            file_path = filedialog.askopenfilename(
+                                title="Open decomposed OTB file to load",
+                                filetypes=[("MATLAB files", "*.mat")],
+                            )
                         self.file_path = file_path
                         # Load file
                         self.resdict = openhdemg.emg_from_otb(
@@ -640,11 +648,13 @@ class emgGUI(ctk.CTk):
                         )
 
                     elif self.filetype.get() == "DEMUSE":
-                        # Ask user to select the file
-                        file_path = filedialog.askopenfilename(
-                            title="Open DEMUSE file to load",
-                            filetypes=[("MATLAB files", "*.mat")],
-                        )
+                        if cli_filepath is not None:
+                            file_path = cli_filepath
+                        else:
+                            file_path = filedialog.askopenfilename(
+                                title="Open DEMUSE file to load",
+                                filetypes=[("MATLAB files", "*.mat")],
+                            )
                         self.file_path = file_path
                         # load file
                         self.resdict = openhdemg.emg_from_demuse(
@@ -667,11 +677,14 @@ class emgGUI(ctk.CTk):
                         )
 
                     elif self.filetype.get() == "DELSYS":
-                        # Ask user to select the file
-                        file_path = filedialog.askopenfilename(
-                            title="Select a DELSYS file with raw EMG to load",
-                            filetypes=[("MATLAB files", "*.mat")],
-                        )
+                        if cli_filepath is not None:
+                            file_path = cli_filepath
+                        else:
+                            file_path = filedialog.askopenfilename(
+                                title="Select a DELSYS file with raw EMG to load",
+                                filetypes=[("MATLAB files", "*.mat")],
+                            )
+
                         # Ask user to open the Delsys decompostition
                         self.mus_path = filedialog.askdirectory(
                             title="Select the folder containing the DELSYS decomposition",
@@ -702,11 +715,14 @@ class emgGUI(ctk.CTk):
                         )
 
                     elif self.filetype.get() == "OPENHDEMG":
-                        # Ask user to select the file
-                        file_path = filedialog.askopenfilename(
-                            title="Open JSON file to load",
-                            filetypes=[("JSON files", "*.json")],
-                        )
+                        if cli_filepath is not None:
+                            file_path = cli_filepath
+                        else:
+                            # Ask user to select the file
+                            file_path = filedialog.askopenfilename(
+                                title="Open JSON file to load",
+                                filetypes=[("JSON files", "*.json")],
+                            )
                         self.file_path = file_path
                         # load OPENHDEMG (.json)
                         self.resdict = openhdemg.emg_from_json(filepath=self.file_path)
@@ -748,11 +764,14 @@ class emgGUI(ctk.CTk):
                                 font=("Segoe UI", 15, "bold"),
                             )
                     else:
-                        # Ask user to select the file
-                        file_path = filedialog.askopenfilename(
-                            title="Open CUSTOMCSV file to load",
-                            filetypes=[("CSV files", "*.csv")],
-                        )
+                        if cli_filepath is not None:
+                            file_path = cli_filepath
+                        else:
+                            # Ask user to select the file
+                            file_path = filedialog.askopenfilename(
+                                title="Open CUSTOMCSV file to load",
+                                filetypes=[("CSV files", "*.csv")],
+                            )
                         self.file_path = file_path
                         # load file
                         self.resdict = openhdemg.emg_from_customcsv(
@@ -797,10 +816,13 @@ class emgGUI(ctk.CTk):
                 # require the filespecs to be loaded.
                 else:
                     if self.filetype.get() == "OTB_REFSIG":
-                        file_path = filedialog.askopenfilename(
-                            title="Open OTB_REFSIG file to load",
-                            filetypes=[("MATLAB files", "*.mat")],
-                        )
+                        if cli_filepath is not None:
+                            file_path = cli_filepath
+                        else:
+                            file_path = filedialog.askopenfilename(
+                                title="Open OTB_REFSIG file to load",
+                                filetypes=[("MATLAB files", "*.mat")],
+                            )
                         self.file_path = file_path
                         # load refsig
                         self.resdict = openhdemg.refsig_from_otb(
@@ -810,12 +832,14 @@ class emgGUI(ctk.CTk):
                         )
 
                     elif self.filetype.get() == "DELSYS_REFSIG":
-
-                        # Ask user to select the file
-                        file_path = filedialog.askopenfilename(
-                            title="Select a DELSYS_REFSIG file with raw EMG to load",
-                            filetypes=[("MATLAB files", "*.mat")],
-                        )
+                        if cli_filepath is not None:
+                            file_path = cli_filepath
+                        else:
+                            # Ask user to select the file
+                            file_path = filedialog.askopenfilename(
+                                title="Select a DELSYS_REFSIG file with raw EMG to load",
+                                filetypes=[("MATLAB files", "*.mat")],
+                            )
                         self.file_path = file_path
                         # load DELSYS
                         self.resdict = openhdemg.refsig_from_delsys(
@@ -824,10 +848,13 @@ class emgGUI(ctk.CTk):
                         )
 
                     elif self.filetype.get() == "CUSTOMCSV_REFSIG":
-                        file_path = filedialog.askopenfilename(
-                            title="Open CUSTOMCSV_REFSIG file to load",
-                            filetypes=[("CSV files", "*.csv")],
-                        )
+                        if cli_filepath is not None:
+                            file_path = cli_filepath
+                        else:
+                            file_path = filedialog.askopenfilename(
+                                title="Open CUSTOMCSV_REFSIG file to load",
+                                filetypes=[("CSV files", "*.csv")],
+                            )
                         self.file_path = file_path
                         # load refsig
                         self.resdict = openhdemg.refsig_from_customcsv(
@@ -1268,17 +1295,21 @@ class emgGUI(ctk.CTk):
         # Show results
         table.show()
 
-
 # ----------------------------------------------------------------------------------------------
 def run_main():
-    # Run GUI upon calling
     if __name__ == "__main__":
+        parser = argparse.ArgumentParser(description="OpenHDEMG GUI")
+        parser.add_argument("--filetype", help="Type of the file to load (e.g., OTB, DEMUSE)")
+        parser.add_argument("--file", help="Path to the file to load")
+        args = parser.parse_args()
+
         app = emgGUI()
+        if args.filetype and args.file:
+            app.filetype.set(args.filetype)
+            app.get_file_input(cli_filepath=args.file)
         app._state_before_windows_set_titlebar_color = "zoomed"
         app.mainloop()
 
-
 if __name__ == "__main__":
-    app = emgGUI()
-    app._state_before_windows_set_titlebar_color = "zoomed"
-    app.mainloop()
+    run_main()
+
